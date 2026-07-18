@@ -1,0 +1,31 @@
+{
+  "default_server": "srv-a",
+  "default_query_timeout_ms": 30000,
+  "default_max_rows": 1000,
+  "servers": [
+    {
+      "name": "srv-a",
+      "host": "10.0.0.1",
+      "port": 1433,
+      "environment": "development",
+      "aliases": ["dev", "a"],
+      "user": "test_user",
+      "password_env": "TEST_PWD_A",
+      "encrypt": false,
+      "trust_server_certificate": true,
+      "allowed_databases": null
+    },
+    {
+      "name": "srv-b",
+      "host": "10.0.0.2",
+      "port": 1433,
+      "environment": "production",
+      "aliases": ["prod", "b"],
+      "user": "test_user2",
+      "password_env": "TEST_PWD_B",
+      "encrypt": false,
+      "trust_server_certificate": true,
+      "allowed_databases": ["ERP"]
+    }
+  ]
+}
