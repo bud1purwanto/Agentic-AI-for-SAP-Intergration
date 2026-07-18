@@ -1,0 +1,28 @@
+{
+  "name": "mcp-sql",
+  "version": "1.0.0",
+  "description": "MCP SQL Server connector — dynamic multi-server, multi-database, read-only access configured via config/sql-servers.json + .env",
+  "type": "module",
+  "main": "index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "start:http": "node http-server.js",
+    "test": "node --test tests/"
+  },
+  "keywords": [
+    "mcp",
+    "sql-server",
+    "mssql",
+    "claude-code"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "mssql": "^10.0.1",
+    "express": "^4.19.2"
+  }
+}

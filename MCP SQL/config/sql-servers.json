@@ -1,0 +1,19 @@
+{
+  "default_server": "dev-224",
+  "default_query_timeout_ms": 30000,
+  "default_max_rows": 1000,
+  "servers": [
+    {
+      "name": "dev-224",
+      "host": "192.168.1.224",
+      "port": 1433,
+      "environment": "development",
+      "aliases": ["dev", "developer"],
+      "user": "DEVELOPER",
+      "password_env": "SQL_PWD_DEV_224",
+      "encrypt": false,
+      "trust_server_certificate": true,
+      "allowed_databases": null
+    }
+  ]
+}
