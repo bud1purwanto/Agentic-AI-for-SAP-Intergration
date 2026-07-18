@@ -99,10 +99,20 @@ export class ServerManager {
 
   async getPool(serverName, database) {
     const key = `${serverName}::${database || ''}`;
-    if (this.poolCache.has(key)) {
-      const cached = this.poolCache.get(key);
-      if (cached.connected) return cached;
-      this.poolCache.delete(key);
+
+    const cached = this.poolCache.get(key);
+    if (cached) {
+      try {
+        const pool = await cached;
+        if (pool.connected) return pool;
+      } catch {
+        // Cached connect failed; fall through to recreate below.
+      }
+      // Only evict if this exact entry is still the cached one (avoid
+      // deleting a newer entry a concurrent caller may have installed).
+      if (this.poolCache.get(key) === cached) {
+        this.poolCache.delete(key);
+      }
     }
 
     const server = this.getServers().find((s) => s.name === serverName);
@@ -115,9 +125,19 @@ export class ServerManager {
       throw new Error(`Password untuk server "${serverName}" tidak ditemukan. Set env var "${server.password_env}" di .env.`);
     }
 
-    const pool = await createPool(server, password, database);
-    this.poolCache.set(key, pool);
-    return pool;
+    // Cache the in-flight promise before awaiting so concurrent callers for
+    // the same key await the same connection instead of each opening a pool.
+    const poolPromise = createPool(server, password, database);
+    this.poolCache.set(key, poolPromise);
+    try {
+      return await poolPromise;
+    } catch (err) {
+      // Don't leave a rejected promise cached — let the next call retry.
+      if (this.poolCache.get(key) === poolPromise) {
+        this.poolCache.delete(key);
+      }
+      throw err;
+    }
   }
 
   isProduction(server) {
