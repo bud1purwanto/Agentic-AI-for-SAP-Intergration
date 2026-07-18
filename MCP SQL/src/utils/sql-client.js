@@ -5,13 +5,17 @@
 import sql from 'mssql';
 
 export function applyRowLimit(sqlText, limit) {
-  const match = sqlText.match(/^\s*SELECT\s+(DISTINCT\s+)?(?!TOP\b)/i);
+  const match = sqlText.match(/^\s*SELECT\s+(DISTINCT\s+)?/i);
   if (!match) {
     return { sql: sqlText, injected: false };
   }
   const insertPos = match[0].length;
+  const remainder = sqlText.slice(insertPos);
+  if (/^TOP\b/i.test(remainder)) {
+    return { sql: sqlText, injected: false };
+  }
   return {
-    sql: sqlText.slice(0, insertPos) + `TOP (${limit}) ` + sqlText.slice(insertPos),
+    sql: sqlText.slice(0, insertPos) + `TOP (${limit}) ` + remainder,
     injected: true
   };
 }
@@ -42,21 +46,42 @@ export async function createPool(server, password, database) {
 
 export async function executeQuery(pool, sqlText, { timeoutMs = 30000 } = {}) {
   const request = pool.request();
-  request.timeout = timeoutMs;
   const startedAt = Date.now();
-  const result = await request.query(sqlText);
-  return {
-    recordset: result.recordset || [],
-    elapsedMs: Date.now() - startedAt
-  };
+
+  const queryPromise = request.query(sqlText);
+  // If the timeout wins the race, queryPromise still eventually settles;
+  // swallow its rejection so it never surfaces as an unhandled rejection.
+  queryPromise.catch(() => {});
+
+  let timer;
+  const timeoutPromise = new Promise((_, reject) => {
+    timer = setTimeout(() => {
+      request.cancel();
+      const err = new Error(`Query timeout after ${timeoutMs}ms`);
+      err.code = 'ETIMEOUT';
+      reject(err);
+    }, timeoutMs);
+  });
+
+  try {
+    const result = await Promise.race([queryPromise, timeoutPromise]);
+    return {
+      recordset: result.recordset || [],
+      elapsedMs: Date.now() - startedAt
+    };
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export function describeConnectionError(err, server) {
   const msg = err.message || String(err);
-  if (/login failed/i.test(msg)) {
+  const code = err.code || '';
+  if (code === 'ELOGIN' || /login failed/i.test(msg)) {
     return `Login gagal untuk user "${server.user}" di server "${server.name}". Cek password di .env (var: ${server.password_env}).`;
   }
-  if (/ETIMEOUT|ESOCKET|ECONNREFUSED|EHOSTUNREACH/i.test(msg)) {
+  const unreachableCodes = ['ETIMEOUT', 'ESOCKET', 'ECONNREFUSED', 'EHOSTUNREACH'];
+  if (unreachableCodes.includes(code) || /ETIMEOUT|ESOCKET|ECONNREFUSED|EHOSTUNREACH|failed to connect/i.test(msg)) {
     return `Tidak bisa menjangkau server "${server.name}" (${server.host}:${server.port || 1433}). Cek jaringan/VPN atau firewall.`;
   }
   return msg;
