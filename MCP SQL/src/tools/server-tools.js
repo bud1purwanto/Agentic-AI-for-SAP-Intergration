@@ -65,9 +65,14 @@ export async function list_databases({ server }, ctx) {
     return { error: describeConnectionError(err, target.server) };
   }
 
-  const result = await pool
-    .request()
-    .query('SELECT name AS database_name, state_desc AS state FROM sys.databases ORDER BY name');
+  let result;
+  try {
+    result = await pool
+      .request()
+      .query('SELECT name AS database_name, state_desc AS state FROM sys.databases ORDER BY name');
+  } catch (err) {
+    return { error: describeConnectionError(err, target.server) };
+  }
 
   let databases = result.recordset;
   const allowed = target.server.allowed_databases;
