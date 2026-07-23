@@ -18,8 +18,13 @@ import { registerToolHandlers } from './src/tool-registry.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 try {
   process.loadEnvFile(join(__dirname, '.env'));
-} catch {
-  // No .env file — fall back to the ambient environment.
+} catch (err) {
+  // A missing .env is expected — the vars may come from the parent process.
+  // Anything else (most likely a malformed .env) must be surfaced, or the
+  // operator would only ever see a confusing "password not found" later.
+  if (err.code !== 'ENOENT') {
+    console.error(`Gagal memuat .env: ${err.message}`);
+  }
 }
 
 const PORT = process.env.MCP_HTTP_PORT || 8092;
@@ -61,18 +66,20 @@ function buildServer(sessionId) {
 app.get('/health', (req, res) => res.json({ status: 'ok', server: 'mcp-sql', transport: 'http' }));
 
 app.post('/mcp', requireAuth, async (req, res) => {
-  const server = buildServer(req.mcpSessionId);
-  const transport = new StreamableHTTPServerTransport({
-    sessionIdGenerator: undefined,
-    enableJsonResponse: true
-  });
-
-  res.on('close', () => {
-    transport.close();
-    server.close();
-  });
-
+  // Built inside the try so a synchronous failure here still returns a
+  // JSON-RPC error instead of crashing the process.
   try {
+    const server = buildServer(req.mcpSessionId);
+    const transport = new StreamableHTTPServerTransport({
+      sessionIdGenerator: undefined,
+      enableJsonResponse: true
+    });
+
+    res.on('close', () => {
+      transport.close();
+      server.close();
+    });
+
     await server.connect(transport);
     await transport.handleRequest(req, res, req.body);
   } catch (err) {
