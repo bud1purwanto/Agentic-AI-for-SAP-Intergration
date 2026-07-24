@@ -106,16 +106,25 @@ export async function describe_table({ table, server, database }, ctx) {
       WHERE OBJECT_SCHEMA_NAME(fk.parent_object_id) = @schema AND OBJECT_NAME(fk.parent_object_id) = @table
     `);
 
+  // STRING_AGG requires SQL Server 2017+ (compat level 140). The actual
+  // servers this project targets run SQL Server 2016, so the column list is
+  // built with the older FOR XML PATH concatenation trick (works since 2005)
+  // instead.
   const indexResult = await conn.pool.request()
     .input('full_name', sql.NVarChar, fullName)
     .query(`
       SELECT i.name AS index_name, i.is_unique, i.is_primary_key,
-             STRING_AGG(c.name, ', ') WITHIN GROUP (ORDER BY ic.key_ordinal) AS columns
+             STUFF((
+               SELECT ', ' + c2.name
+               FROM sys.index_columns ic2
+               JOIN sys.columns c2 ON ic2.object_id = c2.object_id AND ic2.column_id = c2.column_id
+               WHERE ic2.object_id = i.object_id AND ic2.index_id = i.index_id
+               ORDER BY ic2.key_ordinal
+               FOR XML PATH('')
+             ), 1, 2, '') AS columns
       FROM sys.indexes i
-      JOIN sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id
-      JOIN sys.columns c ON ic.object_id = c.object_id AND ic.column_id = c.column_id
       WHERE i.object_id = OBJECT_ID(@full_name)
-      GROUP BY i.name, i.is_unique, i.is_primary_key
+        AND i.index_id > 0
     `);
 
   return {
