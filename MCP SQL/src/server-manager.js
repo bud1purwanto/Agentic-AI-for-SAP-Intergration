@@ -140,6 +140,25 @@ export class ServerManager {
     }
   }
 
+  /**
+   * Drop a pooled connection and close it, so it can never be handed to
+   * another session. Pools are shared across sessions, so any tool that may
+   * have left session state behind (SET options, an open transaction) must
+   * evict rather than return the connection to the cache.
+   */
+  async evictPool(serverName, database) {
+    const key = `${serverName}::${database || ''}`;
+    const cached = this.poolCache.get(key);
+    if (!cached) return;
+    this.poolCache.delete(key);
+    try {
+      const pool = await cached;
+      await pool.close();
+    } catch {
+      // Never connected, or already broken — nothing left to release.
+    }
+  }
+
   isProduction(server) {
     return !!(server && server.environment === 'production');
   }

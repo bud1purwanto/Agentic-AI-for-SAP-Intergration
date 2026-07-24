@@ -4,9 +4,22 @@
 
 import sql from 'mssql';
 
+// Splicing `TOP (n)` after the leading SELECT is only safe for a simple
+// single-block query. Two shapes must be left alone:
+//   - set operators: in `SELECT a FROM x UNION SELECT a FROM y`, TOP binds to
+//     the FIRST arm only, so injecting silently returns a different result set
+//     than the user asked for — worse than returning too many rows.
+//   - OFFSET/FETCH paging: T-SQL rejects TOP in the same query as OFFSET.
+// In both cases we skip injection; run_query still truncates client-side, so
+// the row cap holds either way.
+const ROW_LIMIT_UNSAFE = /\b(UNION|EXCEPT|INTERSECT)\b|\bOFFSET\b[\s\S]*\bFETCH\b/i;
+
 export function applyRowLimit(sqlText, limit) {
   const match = sqlText.match(/^\s*SELECT\s+(DISTINCT\s+)?/i);
   if (!match) {
+    return { sql: sqlText, injected: false };
+  }
+  if (ROW_LIMIT_UNSAFE.test(sqlText)) {
     return { sql: sqlText, injected: false };
   }
   const insertPos = match[0].length;

@@ -57,3 +57,34 @@ test('describeConnectionError falls back to raw message for unknown errors', () 
   const out = describeConnectionError({ message: 'Some other SQL error' }, fakeServer);
   assert.equal(out, 'Some other SQL error');
 });
+
+test('does not inject TOP into a UNION query (TOP would bind to the first arm only)', () => {
+  const original = 'SELECT a FROM x UNION SELECT a FROM y';
+  const result = applyRowLimit(original, 1000);
+  assert.equal(result.injected, false);
+  assert.equal(result.sql, original);
+});
+
+test('does not inject TOP into EXCEPT / INTERSECT queries', () => {
+  for (const original of [
+    'SELECT a FROM x EXCEPT SELECT a FROM y',
+    'SELECT a FROM x INTERSECT SELECT a FROM y'
+  ]) {
+    const result = applyRowLimit(original, 1000);
+    assert.equal(result.injected, false, `injected into: ${original}`);
+    assert.equal(result.sql, original);
+  }
+});
+
+test('does not inject TOP into an OFFSET/FETCH paging query (invalid T-SQL)', () => {
+  const original = 'SELECT a FROM x ORDER BY a OFFSET 100 ROWS FETCH NEXT 50 ROWS ONLY';
+  const result = applyRowLimit(original, 1000);
+  assert.equal(result.injected, false);
+  assert.equal(result.sql, original);
+});
+
+test('still injects TOP for an ordinary ORDER BY query', () => {
+  const result = applyRowLimit('SELECT a FROM x ORDER BY a', 1000);
+  assert.equal(result.injected, true);
+  assert.equal(result.sql, 'SELECT TOP (1000) a FROM x ORDER BY a');
+});

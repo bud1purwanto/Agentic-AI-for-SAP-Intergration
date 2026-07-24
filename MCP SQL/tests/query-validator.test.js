@@ -68,3 +68,48 @@ test('allows a single statement with a harmless trailing semicolon', () => {
   const result = validateReadOnlyQuery('SELECT * FROM Foo;');
   assert.equal(result.ok, true);
 });
+
+// The forbidden-keyword loop is generic, so a typo in FORBIDDEN_KEYWORDS would
+// silently stop blocking a verb. Exercise every one of them.
+const FORBIDDEN = [
+  'INSERT', 'UPDATE', 'DELETE', 'MERGE', 'DROP', 'ALTER', 'TRUNCATE', 'CREATE',
+  'INTO', 'BULK', 'EXEC', 'EXECUTE', 'GRANT', 'REVOKE', 'DENY', 'USE', 'SET',
+  'DBCC', 'KILL', 'SHUTDOWN', 'RECONFIGURE', 'WAITFOR', 'BACKUP', 'RESTORE',
+  'OPENROWSET', 'OPENQUERY', 'OPENDATASOURCE'
+];
+
+test('rejects every forbidden keyword, even smuggled after a leading SELECT', () => {
+  for (const kw of FORBIDDEN) {
+    const result = validateReadOnlyQuery(`SELECT 1\n${kw} something`);
+    assert.equal(result.ok, false, `${kw} was not rejected`);
+    assert.match(result.reason, new RegExp(kw, 'i'), `${kw} rejection did not name the keyword`);
+  }
+});
+
+// T-SQL statements need no terminator, so a second statement on a new line is
+// one legal batch that SQL Server executes in full — the ";" check alone does
+// not catch this.
+test('rejects a second statement separated only by a newline (no semicolon)', () => {
+  const result = validateReadOnlyQuery('SELECT 1\nDBCC FREEPROCCACHE');
+  assert.equal(result.ok, false);
+});
+
+test('rejects USE, which would change the pooled connection database context', () => {
+  const result = validateReadOnlyQuery('SELECT 1\nUSE OtherDatabase');
+  assert.equal(result.ok, false);
+});
+
+test('strips block comments so a keyword inside one does not reject a valid query', () => {
+  const result = validateReadOnlyQuery('SELECT 1 /* we should DELETE this table someday */ FROM Foo');
+  assert.equal(result.ok, true);
+});
+
+test('still allows ordinary SELECTs containing keyword-like substrings', () => {
+  for (const q of [
+    'SELECT * FROM Orders ORDER BY id OFFSET 10 ROWS',
+    'SELECT CreatedBy, Inserted FROM Houses',
+    'SELECT SettingValue FROM UserSettings'
+  ]) {
+    assert.equal(validateReadOnlyQuery(q).ok, true, `false positive on: ${q}`);
+  }
+});

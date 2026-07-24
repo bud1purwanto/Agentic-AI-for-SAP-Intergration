@@ -49,9 +49,25 @@ function stripCommentsAndStrings(sqlText) {
   return result;
 }
 
+// T-SQL does not require statement terminators, so `SELECT 1` followed by a
+// newline and a second statement is a single legal batch that SQL Server will
+// execute in full. The `;` check below therefore cannot enforce "one
+// statement" on its own, and this list has to name every dangerous verb —
+// not just the ones that write table data.
 const FORBIDDEN_KEYWORDS = [
+  // Data / schema modification
   'INSERT', 'UPDATE', 'DELETE', 'MERGE', 'DROP', 'ALTER',
-  'TRUNCATE', 'EXEC', 'EXECUTE', 'INTO', 'GRANT', 'REVOKE', 'CREATE'
+  'TRUNCATE', 'CREATE', 'INTO', 'BULK',
+  // Procedure execution
+  'EXEC', 'EXECUTE',
+  // Permissions
+  'GRANT', 'REVOKE', 'DENY',
+  // Server / session state — `USE` and `SET` matter especially because
+  // connections are pooled and shared, so a session-state change would leak
+  // into another caller's later query on the same connection.
+  'USE', 'SET', 'DBCC', 'KILL', 'SHUTDOWN', 'RECONFIGURE', 'WAITFOR',
+  // Backup / restore and ad-hoc remote access
+  'BACKUP', 'RESTORE', 'OPENROWSET', 'OPENQUERY', 'OPENDATASOURCE'
 ];
 
 export function validateReadOnlyQuery(rawSql) {

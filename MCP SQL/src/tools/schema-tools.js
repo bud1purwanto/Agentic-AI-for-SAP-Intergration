@@ -189,28 +189,70 @@ export async function explain_query({ sql: sqlText, server, database }, ctx) {
   const conn = await connect(ctx, server, database);
   if (!conn.ok) return { error: conn.error };
 
+  // The transaction exists only to pin one pooled connection for all three
+  // batches below — SHOWPLAN_XML compiles without executing, so there is
+  // nothing for a rollback to undo.
+  //
+  // Ordering here is load-bearing: while SHOWPLAN_XML is ON, SQL Server
+  // compiles but does NOT execute subsequent statements, and that includes
+  // ROLLBACK. Turning SHOWPLAN off must therefore happen BEFORE the rollback
+  // on every path, or the connection goes back into the shared pool with an
+  // open transaction and SHOWPLAN still on — and the next caller (possibly a
+  // different session) silently gets plan XML instead of their rows.
   const transaction = new sql.Transaction(conn.pool);
   await transaction.begin();
+
+  let planResult;
+  let planError;
+  let showplanOn = false;
+  let connectionSuspect = false;
+
   try {
     await new sql.Request(transaction).batch('SET SHOWPLAN_XML ON');
-    const planResult = await new sql.Request(transaction).batch(sqlText.trim());
-    await new sql.Request(transaction).batch('SET SHOWPLAN_XML OFF');
-    await transaction.rollback();
-
-    const xml = planResult.recordset && planResult.recordset[0]
-      ? Object.values(planResult.recordset[0])[0]
-      : null;
-
-    return {
-      server: conn.target.server.name,
-      database: conn.target.database || '(default)',
-      execution_plan_xml: xml
-    };
+    showplanOn = true;
+    planResult = await new sql.Request(transaction).batch(sqlText.trim());
   } catch (err) {
-    await transaction.rollback().catch(() => {});
-    if (/permission/i.test(err.message || '')) {
+    planError = err;
+  } finally {
+    if (showplanOn) {
+      try {
+        await new sql.Request(transaction).batch('SET SHOWPLAN_XML OFF');
+        showplanOn = false;
+      } catch {
+        // Could not restore the connection; it must not be reused.
+        connectionSuspect = true;
+      }
+    }
+    try {
+      await transaction.rollback();
+    } catch {
+      connectionSuspect = true;
+    }
+  }
+
+  if (connectionSuspect) {
+    await serverManager.evictPool(conn.target.server.name, conn.target.database);
+    return {
+      error:
+        `Gagal memulihkan state koneksi setelah explain_query di server "${conn.target.server.name}". ` +
+        'Koneksi sudah dibuang agar tidak dipakai ulang. Coba lagi.'
+    };
+  }
+
+  if (planError) {
+    if (/permission/i.test(planError.message || '')) {
       return { error: `Login tidak punya izin SHOWPLAN di server "${conn.target.server.name}". Minta admin DB memberi GRANT SHOWPLAN.` };
     }
-    return { error: err.message };
+    return { error: planError.message };
   }
+
+  const xml = planResult.recordset && planResult.recordset[0]
+    ? Object.values(planResult.recordset[0])[0]
+    : null;
+
+  return {
+    server: conn.target.server.name,
+    database: conn.target.database || '(default)',
+    execution_plan_xml: xml
+  };
 }
