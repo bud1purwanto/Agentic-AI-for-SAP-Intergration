@@ -8,9 +8,21 @@
       "host": "192.168.1.224",
       "port": 1433,
       "environment": "development",
-      "aliases": ["dev", "developer"],
+      "aliases": ["dev", "developer", "OLAP Baru"],
       "user": "DEVELOPER",
       "password_env": "SQL_PWD_DEV_224",
+      "encrypt": false,
+      "trust_server_certificate": true,
+      "allowed_databases": null
+    },
+    {
+      "name": "dev-223",
+      "host": "192.168.1.223",
+      "port": 1433,
+      "environment": "development",
+      "aliases": ["OLAP Lama"],
+      "user": "DEVELOPER",
+      "password_env": "SQL_PWD_DEV_223",
       "encrypt": false,
       "trust_server_certificate": true,
       "allowed_databases": null
