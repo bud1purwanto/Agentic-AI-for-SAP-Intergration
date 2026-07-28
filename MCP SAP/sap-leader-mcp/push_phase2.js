@@ -6,18 +6,18 @@ async function main() {
   await serverManager.loadConfig();
   await serverManager.setActiveServer('sandbox-new');
   
-  const sourceCode = fs.readFileSync('sandbox_source.abap', 'utf-8');
+  const sourceCode = fs.readFileSync('../ZMMI_PO_RELEASE_PHASE2.abap', 'utf-8');
   const sourceLines = sourceCode.split(/\r?\n/);
   
   const itSource = sourceLines.map(line => ({ LINE: line }));
 
-  console.log(`Pushing ${itSource.length} lines to ZQMI_COA_F01...`);
+  console.log(`Pushing ${itSource.length} lines to ZMMI_PO_RELEASE_PHASE2...`);
 
   const result = await call_function({
     function_name: 'Z_RFC_PROGRAM_UPDATE',
     parameters: {
-      IV_PROGRAM_NAME: 'ZQMI_COA_F01',
-      IV_PACKAGE: '$TMP', // Usually sandbox uses local object or whatever it is
+      IV_PROGRAM_NAME: 'ZMMI_PO_RELEASE_PHASE2',
+      IV_PACKAGE: '$TMP',
       IT_SOURCE: itSource
     }
   });

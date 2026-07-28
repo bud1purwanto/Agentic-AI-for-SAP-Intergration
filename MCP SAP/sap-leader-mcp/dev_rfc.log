@@ -18,3 +18,85 @@ Global trace level        : 0
 
 2026-07-01 16:55:40.746125 [24324] >> Info entry
 	Did not find config file C:\Users\Lenovo\Documents\Claude\MCP SAP\sap-leader-mcp\sapnwrfc.ini.
+
+**** Log file opened at 2026-07-15 15:06:53.950513 UTC+07:00 (SE Asia Standard Time), Encoding UTF-8
+NW RFC Library: SDK variant, Release 750 Patch Level 12
+Compilation date          : Jul  7 2023 22:54:54
+CPIC library              : 753.2023.07.06 version 3
+NI library                : 40
+Kernel Release            : 753 Patch Level 1216
+Current working directory : C:\Users\Lenovo\Documents\Claude\MCP SAP\sap-leader-mcp
+Program                   : node
+Process ID                : 25132
+User                      : bud1purwanto
+Hardware                  : PC with Windows NT 8x AMD64 Level 6 (Mod 140 Step 1)
+Operating_system          : Windows NT 10.0
+Hostname                  : KR-IT-BUDI
+IP address                : 192.168.88.92
+IPv6 address              : fe80::f181:d6b7:693d:221b
+Global trace level        : 0
+
+2026-07-15 15:06:53.949964 [25848] >> Error entry
+	Error in receive: 18, no SAP ErrInfo available, 648
+2026-07-15 15:06:53.953276 [25848] >> Error entry
+	[Handle: 2018331918160	ConvID: 36945958	Target: eccprodkr	SysID: TRP	SysNr: 00	User: TRSTDEV	Client: 999	Language: E	Codepage: 4103]
+	RfcSystemException: Key: SAPSQL_WHERE_MISSING_VALUE, Code: RFC_ABAP_RUNTIME_FAILURE, Message: A comparison value is missing in a condition specified dynamically.
+
+**** Log file opened at 2026-07-21 09:40:50.839354 UTC+07:00 (SE Asia Standard Time), Encoding UTF-8
+NW RFC Library: SDK variant, Release 750 Patch Level 12
+Compilation date          : Jul  7 2023 22:54:54
+CPIC library              : 753.2023.07.06 version 3
+NI library                : 40
+Kernel Release            : 753 Patch Level 1216
+Current working directory : C:\Users\Lenovo\Documents\Claude\MCP SAP\sap-leader-mcp
+Program                   : node
+Process ID                : 10512
+User                      : bud1purwanto
+Hardware                  : PC with Windows NT 8x AMD64 Level 6 (Mod 140 Step 1)
+Operating_system          : Windows NT 10.0
+Hostname                  : KR-IT-BUDI
+IP address                : 192.168.88.92
+IPv6 address              : fe80::f181:d6b7:693d:221b
+Global trace level        : 0
+
+2026-07-21 09:40:50.838547 [19544] >> Error entry
+	Error in receive: 18, no SAP ErrInfo available, 628
+2026-07-21 09:40:50.841674 [19544] >> Error entry
+	[Handle: 1678326197328	ConvID: 77310865	Target: trsteccdev	SysID: TRD	SysNr: 00	User: TRSTDEV	Client: 130	Language: E	Codepage: 4103]
+	RfcSystemException: Key: SAPSQL_WHERE_PARENTHESES, Code: RFC_ABAP_RUNTIME_FAILURE, Message: A condition specified dynamically has an unexpected format.
+
+**** Log file opened at 2026-07-21 11:06:54.486998 UTC+07:00 (SE Asia Standard Time), Encoding UTF-8
+NW RFC Library: SDK variant, Release 750 Patch Level 12
+Compilation date          : Jul  7 2023 22:54:54
+CPIC library              : 753.2023.07.06 version 3
+NI library                : 40
+Kernel Release            : 753 Patch Level 1216
+Current working directory : C:\Users\Lenovo\Documents\Claude\MCP SAP\sap-leader-mcp
+Program                   : node
+Process ID                : 31472
+User                      : bud1purwanto
+Hardware                  : PC with Windows NT 8x AMD64 Level 6 (Mod 140 Step 1)
+Operating_system          : Windows NT 10.0
+Hostname                  : KR-IT-BUDI
+IP address                : 192.168.88.92
+IPv6 address              : fe80::f181:d6b7:693d:221b
+Global trace level        : 0
+
+2026-07-21 11:06:54.486330 [26792] >> Error entry
+	[Handle: 1621299687440	ConvID: 	Target: 	SysID: 	SysNr: 	User: 	Codepage: 4103]
+	RfcCommunicationException: Return Value: 20, Code: RFC_COMMUNICATION_FAILURE, Message: 
+LOCATION    CPIC (TCP/IP) on local host with Unicode
+ERROR       partner '192.168.88.199:3300' not reached
+TIME        Tue Jul 21 11:06:54 2026
+RELEASE     753
+COMPONENT   NI (network interface)
+VERSION     40
+RC          -10
+MODULE      D:/depot/bas/753_REL/src/base/ni/nixxi.cpp
+LINE        3458
+DETAIL      NiPConnect2: 192.168.88.199:3300
+SYSTEM CALL connect
+ERRNO       10061
+ERRNO TEXT  WSAECONNREFUSED: Connection refused
+COUNTER     2
+
