@@ -35,25 +35,24 @@ function tryAuth(label, opts) {
   });
 }
 
+const rawUser = process.env.EMAIL_LOGIN_USER || '';
+const domain = rawUser.includes('\\') ? rawUser.split('\\')[0] : '';
+const username = rawUser.includes('\\') ? rawUser.split('\\')[1] : rawUser;
+const emailAddr = process.env.EMAIL_USER || '';
+
 (async () => {
-  // Try 1: DOMAIN\user with short domain
-  await tryAuth('NTLM triasmail\\budi.purwanto', {
-    url: 'https://mail.trst.co.id/EWS/Exchange.asmx',
-    username: 'budi.purwanto', password: pass, domain: 'triasmail',
-  });
-  // Try 2: email address as username (no domain)
-  await tryAuth('NTLM email address', {
-    url: 'https://mail.trst.co.id/EWS/Exchange.asmx',
-    username: 'budi.purwanto@trst.co.id', password: pass, domain: '',
-  });
-  // Try 3: FQDN domain
-  await tryAuth('NTLM triasmail.co.id domain', {
-    url: 'https://mail.trst.co.id/EWS/Exchange.asmx',
-    username: 'budi.purwanto', password: pass, domain: 'triasmail.co.id',
-  });
-  // Try 4: different URL path casing / EWS autodiscover
-  await tryAuth('EWS lowercase path', {
-    url: 'https://mail.trst.co.id/ews/exchange.asmx',
-    username: 'budi.purwanto', password: pass, domain: 'triasmail',
-  });
+  if (domain && username) {
+    // Try 1: DOMAIN\user with short domain
+    await tryAuth(`NTLM ${domain}\\${username}`, {
+      url: 'https://mail.trst.co.id/EWS/Exchange.asmx',
+      username, password: pass, domain,
+    });
+  }
+  if (emailAddr) {
+    // Try 2: email address as username (no domain)
+    await tryAuth('NTLM email address', {
+      url: 'https://mail.trst.co.id/EWS/Exchange.asmx',
+      username: emailAddr, password: pass, domain: '',
+    });
+  }
 })();

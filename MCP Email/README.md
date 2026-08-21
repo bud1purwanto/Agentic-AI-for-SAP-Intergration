@@ -32,16 +32,17 @@ that shape this setup:
 
 2. **AD-style login.** Exchange 2007 authenticates against Active Directory
    using `DOMAIN\username`, not the SMTP address. The mailbox address
-   (`budi.purwanto@trst.co.id`, used as From/search target) and the login
-   identity (`triasmail\budi.purwanto`, used for auth) are configured
-   separately in `src/emailClient.ts`.
+   (configured via `EMAIL_USER`, used as From/search target) and the login
+   identity (configured via `EMAIL_LOGIN_USER`, used for auth) are configured
+   via environment variables.
 
 Endpoints/login are overridable via env (see `.env.example`):
 
 | Var | Default | Purpose |
 |-----|---------|---------|
 | `EMAIL_PASS` | *(required)* | AD account password. Never hardcoded. |
-| `EMAIL_LOGIN_USER` | `triasmail\budi.purwanto` | Auth identity for IMAP/SMTP. |
+| `EMAIL_USER` | *(required)* | Mailbox email address (e.g. `user@trst.co.id`). |
+| `EMAIL_LOGIN_USER` | *(required)* | Auth identity for IMAP/SMTP/EWS (`DOMAIN\username`). |
 | `IMAP_HOST` / `IMAP_PORT` | `127.0.0.1` / `11993` | Points at the stunnel bridge. |
 | `SMTP_HOST` / `SMTP_PORT` | `mail.triasmail.co.id` / `587` | Direct submission port. |
 

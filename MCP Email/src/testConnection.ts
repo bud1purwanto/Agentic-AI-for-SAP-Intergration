@@ -11,7 +11,18 @@ async function main() {
     for (const e of emails) {
       console.log(`   - ${e.date} | ${e.from} | ${e.subject}`);
     }
-    if (emails.length === 0) console.log("   (inbox empty or no matches)");
+    if (emails.length === 0) {
+      console.log("   (inbox empty or no matches)");
+    } else {
+      console.log("\n[Reading Latest Email Detail] ...");
+      const detail = await emailClient.readEmail(emails[0].messageId);
+      console.log(`   From: ${detail.from}`);
+      console.log(`   To: ${detail.to}`);
+      console.log(`   Date: ${detail.date}`);
+      console.log(`   Subject: ${detail.subject}`);
+      console.log(`   Attachments: ${detail.attachments.length}`);
+      console.log(`   Body:\n----------------------------------------\n${detail.body}\n----------------------------------------`);
+    }
   } catch (err) {
     console.error("  FAILED:", err instanceof Error ? err.message : err);
   }

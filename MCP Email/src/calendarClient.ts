@@ -1,6 +1,9 @@
 import EWS from "node-ews";
 
-const EMAIL_USER = "budi.purwanto@trst.co.id";
+function getEmailUser(): string {
+  return process.env.EMAIL_USER?.trim() || "";
+}
+
 // Certificate on this Exchange server is issued for *.trst.co.id.
 // mail.trst.co.id resolves to the same IP (192.168.1.15).
 const EWS_HOST = process.env.EWS_HOST?.trim() ?? "https://mail.trst.co.id";
@@ -8,8 +11,15 @@ const EWS_HOST = process.env.EWS_HOST?.trim() ?? "https://mail.trst.co.id";
 function getCreds() {
   const pass = process.env.EMAIL_PASS?.trim();
   if (!pass) throw new Error("EMAIL_PASS is not set.");
+  const username = process.env.EMAIL_LOGIN_USER?.trim();
+  if (!username) {
+    throw new Error(
+      "EMAIL_LOGIN_USER environment variable is not set. " +
+        "Set it (e.g. in a .env file) before starting the server."
+    );
+  }
   return {
-    username: process.env.EMAIL_LOGIN_USER?.trim() ?? "triasmail\\budi.purwanto",
+    username,
     password: pass,
     host: EWS_HOST,
   };
@@ -122,7 +132,8 @@ export function formatCalendarItem(item: CalendarItem): string {
 
   const parts = [`📅 **${item.subject}**`, `⏰ ${timeStr}`];
   if (item.location) parts.push(`📍 ${item.location}`);
-  if (item.organizer && item.organizer !== EMAIL_USER) parts.push(`👤 ${item.organizer}`);
+  const myEmail = getEmailUser();
+  if (item.organizer && myEmail && item.organizer !== myEmail) parts.push(`👤 ${item.organizer}`);
   if (item.status) parts.push(`✅ ${item.status}`);
 
   return parts.join(" | ");

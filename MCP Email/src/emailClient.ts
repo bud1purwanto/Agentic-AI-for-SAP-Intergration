@@ -14,14 +14,8 @@ import TurndownService from "turndown";
  * submission port (587), which accepts AUTH LOGIN. Hosts/ports are overridable
  * via env so the deployment can be tuned without code changes.
  */
-const EMAIL_USER = "budi.purwanto@trst.co.id";
-
 const env = (key: string, fallback: string): string =>
   process.env[key]?.trim() || fallback;
-
-// Exchange 2007 authenticates against AD using DOMAIN\username, not the SMTP
-// address. The From/To address stays EMAIL_USER; only the auth identity differs.
-const LOGIN_USER = env("EMAIL_LOGIN_USER", "triasmail\\budi.purwanto");
 
 const envNum = (key: string, fallback: number): number => {
   const v = process.env[key]?.trim();
@@ -57,6 +51,28 @@ function getPassword(): string {
     );
   }
   return pass;
+}
+
+function getEmailUser(): string {
+  const user = process.env.EMAIL_USER?.trim();
+  if (!user) {
+    throw new Error(
+      "EMAIL_USER environment variable is not set. " +
+        "Set it (e.g. in a .env file) before starting the server."
+    );
+  }
+  return user;
+}
+
+function getLoginUser(): string {
+  const user = process.env.EMAIL_LOGIN_USER?.trim();
+  if (!user) {
+    throw new Error(
+      "EMAIL_LOGIN_USER environment variable is not set. " +
+        "Set it (e.g. in a .env file) before starting the server."
+    );
+  }
+  return user;
 }
 
 export interface EmailSummary {
@@ -114,7 +130,7 @@ export class EmailClient {
   private buildImapOptions(): ImapFlowOptions {
     return {
       ...IMAP_CONFIG,
-      auth: { user: LOGIN_USER, pass: getPassword() },
+      auth: { user: getLoginUser(), pass: getPassword() },
       logger: false,
       // The stunnel bridge already provides TLS to Exchange; the loopback hop
       // is plaintext, so never attempt a (doomed) STARTTLS upgrade on it.
@@ -352,7 +368,7 @@ export class EmailClient {
     if (this.transporter) return this.transporter;
     this.transporter = nodemailer.createTransport({
       ...SMTP_CONFIG,
-      auth: { user: LOGIN_USER, pass: getPassword(), method: "LOGIN" },
+      auth: { user: getLoginUser(), pass: getPassword(), method: "LOGIN" },
       pool: true,
       maxConnections: 3,
       connectionTimeout: 15000,
@@ -367,7 +383,7 @@ export class EmailClient {
   async sendEmail(opts: { to: string; subject: string; body: string }): Promise<string> {
     const transporter = this.getTransporter();
     const info = await transporter.sendMail({
-      from: EMAIL_USER,
+      from: getEmailUser(),
       to: opts.to,
       subject: opts.subject,
       text: opts.body,
