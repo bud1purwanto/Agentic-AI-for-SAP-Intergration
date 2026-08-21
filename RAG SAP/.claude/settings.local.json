@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -X POST http://192.168.1.162:8090/mcp -H 'Content-Type: application/json' -H 'Authorization: Bearer Trias123' -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\",\"params\":{}}')",
+      "Bash(curl -s -X POST http://192.168.1.162:8090/mcp -H 'Content-Type: application/json' -H 'Authorization: Bearer Trias123' -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\",\"params\":{}}' -m 10 -w '\\\\nHTTP_STATUS:%{http_code}\\\\n')"
+    ]
+  }
+}

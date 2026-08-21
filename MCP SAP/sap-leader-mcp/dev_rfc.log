@@ -100,3 +100,72 @@ ERRNO       10061
 ERRNO TEXT  WSAECONNREFUSED: Connection refused
 COUNTER     2
 
+
+**** Log file opened at 2026-07-29 15:44:28.665618 UTC+07:00 (SE Asia Standard Time), Encoding UTF-8
+NW RFC Library: SDK variant, Release 750 Patch Level 12
+Compilation date          : Jul  7 2023 22:54:54
+CPIC library              : 753.2023.07.06 version 3
+NI library                : 40
+Kernel Release            : 753 Patch Level 1216
+Current working directory : C:\Users\Lenovo\Documents\Claude\MCP SAP\sap-leader-mcp
+Program                   : node
+Process ID                : 27528
+User                      : bud1purwanto
+Hardware                  : PC with Windows NT 8x AMD64 Level 6 (Mod 140 Step 1)
+Operating_system          : Windows NT 10.0
+Hostname                  : KR-IT-BUDI
+IP address                : 192.168.88.92
+IPv6 address              : fe80::f181:d6b7:693d:221b
+Global trace level        : 0
+
+2026-07-29 15:44:28.661961 [11896] >> Error entry
+	Error in receive: 18, no SAP ErrInfo available, 97
+2026-07-29 15:44:28.674324 [11896] >> Error entry
+	[Handle: 2643206420096	ConvID: 56882076	Target: eccdevlinux	SysID: TRD	SysNr: 00	User: TRSTDEV	Client: 130	Language: E	Codepage: 4103]
+	RfcSystemException: Key: , Code: RFC_ABAP_RUNTIME_FAILURE, Message: The ABAP program lines are wider than the internal
+
+**** Log file opened at 2026-08-03 16:31:38.660550 UTC+07:00 (SE Asia Standard Time), Encoding UTF-8
+NW RFC Library: SDK variant, Release 750 Patch Level 12
+Compilation date          : Jul  7 2023 22:54:54
+CPIC library              : 753.2023.07.06 version 3
+NI library                : 40
+Kernel Release            : 753 Patch Level 1216
+Current working directory : C:\Users\Lenovo\Documents\Claude\MCP SAP\sap-leader-mcp
+Program                   : node
+Process ID                : 21872
+User                      : bud1purwanto
+Hardware                  : PC with Windows NT 8x AMD64 Level 6 (Mod 140 Step 1)
+Operating_system          : Windows NT 10.0
+Hostname                  : KR-IT-BUDI
+IP address                : 192.168.88.92
+IPv6 address              : fe80::f181:d6b7:693d:221b
+Global trace level        : 0
+
+2026-08-03 16:31:38.659882 [19508] >> Error entry
+	Error in receive: 18, no SAP ErrInfo available, 628
+2026-08-03 16:31:38.661092 [19508] >> Error entry
+	[Handle: 2624184975312	ConvID: 25547482	Target: trsteccdev	SysID: TRD	SysNr: 00	User: TRSTDEV	Client: 130	Language: E	Codepage: 4103]
+	RfcSystemException: Key: SAPSQL_WHERE_PARENTHESES, Code: RFC_ABAP_RUNTIME_FAILURE, Message: A condition specified dynamically has an unexpected format.
+
+**** Log file opened at 2026-08-03 16:37:21.692418 UTC+07:00 (SE Asia Standard Time), Encoding UTF-8
+NW RFC Library: SDK variant, Release 750 Patch Level 12
+Compilation date          : Jul  7 2023 22:54:54
+CPIC library              : 753.2023.07.06 version 3
+NI library                : 40
+Kernel Release            : 753 Patch Level 1216
+Current working directory : C:\Users\Lenovo\Documents\Claude\MCP SAP\sap-leader-mcp
+Program                   : node
+Process ID                : 29976
+User                      : bud1purwanto
+Hardware                  : PC with Windows NT 8x AMD64 Level 6 (Mod 140 Step 1)
+Operating_system          : Windows NT 10.0
+Hostname                  : KR-IT-BUDI
+IP address                : 192.168.88.92
+IPv6 address              : fe80::f181:d6b7:693d:221b
+Global trace level        : 0
+
+2026-08-03 16:37:21.691590 [18728] >> Error entry
+	Error in receive: 18, no SAP ErrInfo available, 536
+2026-08-03 16:37:21.693374 [18728] >> Error entry
+	[Handle: 3163108458208	ConvID: 25919647	Target: trsteccdev	SysID: TRD	SysNr: 00	User: TRSTDEV	Client: 130	Language: E	Codepage: 4103]
+	RfcSystemException: Key: CALL_FUNCTION_NOT_REMOTE, Code: RFC_ABAP_RUNTIME_FAILURE, Message: The function module "ZQM_GET_BATCH_JR_BY_SR" cannot be used for 'remote' calls.
