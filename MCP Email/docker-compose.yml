@@ -1,0 +1,9 @@
+services:
+  mcp-email:
+    build: .
+    container_name: mcp-email-connector
+    restart: unless-stopped
+    env_file:
+      - .env
+    stdin_open: true
+    tty: true

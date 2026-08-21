@@ -120,10 +120,10 @@ export async function handleGetCalendar(args: unknown): Promise<TextResult> {
   try {
     const { date, daysAhead } = getCalendarSchema.parse(args);
 
-    // Default to today in local time (WIB UTC+7).
-    const startDate = date ?? new Date(Date.now() + 7 * 60 * 60 * 1000)
-      .toISOString()
-      .slice(0, 10);
+    // Default to today in local time (WIB UTC+7 / Asia/Jakarta).
+    const tz = process.env.TIMEZONE || "Asia/Jakarta";
+    const startDate =
+      date ?? new Intl.DateTimeFormat("en-CA", { timeZone: tz }).format(new Date());
 
     // End date = startDate + daysAhead.
     const endDt = new Date(startDate);

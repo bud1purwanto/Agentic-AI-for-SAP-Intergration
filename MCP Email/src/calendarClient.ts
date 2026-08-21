@@ -124,10 +124,11 @@ export function formatCalendarItem(item: CalendarItem): string {
   const start = item.start ? new Date(item.start) : null;
   const end = item.end ? new Date(item.end) : null;
 
+  const tz = process.env.TIMEZONE || "Asia/Jakarta";
   const timeStr = item.isAllDay
     ? "All Day"
     : start && end
-    ? `${start.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} – ${end.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`
+    ? `${start.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", timeZone: tz })} – ${end.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", timeZone: tz })}`
     : "";
 
   const parts = [`📅 **${item.subject}**`, `⏰ ${timeStr}`];

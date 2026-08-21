@@ -46,52 +46,96 @@ Endpoints/login are overridable via env (see `.env.example`):
 | `IMAP_HOST` / `IMAP_PORT` | `127.0.0.1` / `11993` | Points at the stunnel bridge. |
 | `SMTP_HOST` / `SMTP_PORT` | `mail.triasmail.co.id` / `587` | Direct submission port. |
 
-## Setup
+## Setup & Deployment
 
+### Option A: Linux Server (1-Command Auto Setup)
+
+On Ubuntu, Debian, or RHEL/CentOS:
 ```bash
+# 1. Clone/copy this folder to your Linux server
+# 2. Run the automated setup script
+chmod +x setup-linux.sh
+./setup-linux.sh
+
+# 3. Edit credentials in .env
+nano .env
+
+# 4. Test connection
+node dist/testConnection.js
+```
+
+---
+
+### Option B: Docker / Docker Compose
+
+If you have Docker installed on Linux or Windows:
+```bash
+# 1. Configure .env with your credentials
+cp .env.example .env
+nano .env
+
+# 2. Build & run
+docker compose up -d
+
+# 3. Test connection inside container
+docker compose exec mcp-email node dist/testConnection.js
+```
+
+---
+
+### Option C: Windows
+
+```powershell
 # 1. Install dependencies
 npm install
 
-# 2. Configure credentials
-cp .env.example .env
-#   then edit .env and set EMAIL_PASS=... (EMAIL_LOGIN_USER default is usually fine)
+# 2. Configure credentials in .env
+Copy-Item .env.example .env
+# edit .env with your details
 
-# 3. Install & start the stunnel bridge (one-time, needs Administrator)
+# 3. Install & start stunnel bridge (One-time, Run as Administrator)
 winget install --id MichalTrojnara.Stunnel -e
-#   In an elevated PowerShell:
 $exe="C:\Program Files (x86)\stunnel\bin\stunnel.exe"
 $cfg="<path to this project>\stunnel.conf"
 & $exe -install $cfg
 Start-Service stunnel
-Set-Service stunnel -StartupType Automatic   # survives reboot
+Set-Service stunnel -StartupType Automatic
 
-# 4. Build
+# 4. Build and test
 npm run build
-
-# 5. Run
-npm start
-# or directly:  node dist/index.js
+node dist/testConnection.js
 ```
 
 For development with auto-recompile: `npm run dev`.
 
-To verify IMAP/SMTP connectivity independently of an MCP client, run
-`node dist/testConnection.js` after building — it checks both transports and
-prints recent inbox messages without sending anything.
+---
 
 ## Registering with an MCP client / Orchestrator
 
-Add an entry like this to your MCP client config:
-
+### 1. Local (Windows / Linux)
 ```json
 {
   "mcpServers": {
     "email": {
       "command": "node",
-      "args": ["C:\\Users\\Lenovo\\Documents\\Claude\\MCP Email\\dist\\index.js"],
+      "args": ["/path/to/mcp-email/dist/index.js"],
       "env": {
-        "EMAIL_PASS": "your-email-password"
+        "EMAIL_PASS": "your-password",
+        "EMAIL_USER": "your.name@trst.co.id",
+        "EMAIL_LOGIN_USER": "triasmail\\your.username"
       }
+    }
+  }
+}
+```
+
+### 2. Remote via SSH (Client connecting to Linux Server)
+```json
+{
+  "mcpServers": {
+    "email-linux": {
+      "command": "ssh",
+      "args": ["user@your-linux-server-ip", "node /path/to/mcp-email/dist/index.js"]
     }
   }
 }
